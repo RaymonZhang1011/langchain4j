@@ -9,8 +9,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Map;
-import java.util.Objects;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static dev.langchain4j.agent.tool.ToolExecutionRequestUtil.argumentsAsMap;
 
@@ -225,6 +226,91 @@ public class DefaultToolExecutor implements ToolExecutor {
         checkBounds(doubleValue, parameterName, parameterType, minValue, maxValue);
         return (long) doubleValue;
     }
+
+
+        public static final String DEFAULT_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+
+        public static final String YMD_PATTERN_SLASH = "yyyy/MM/dd";
+
+        public static String dateToString(Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DEFAULT_PATTERN);
+        return simpleDateFormat.format(date);
+    }
+
+        public static Long stringDateToTs(String date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DEFAULT_PATTERN);
+        try {
+            return simpleDateFormat.parse(date).getTime() / 1000;
+        } catch (ParseException e) {
+            log.error("stringDateToTs error", e);
+        }
+        return null;
+    }
+
+        public static String dateToSpecialString(Date date, String pattern) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        return simpleDateFormat.format(date);
+    }
+
+        public static String dateToYyMmDd(Date date) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DEFAULT_PATTERN);
+        return simpleDateFormat.format(date);
+    }
+
+        public static String getYmdhsPatternString(Long timestamp) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DEFAULT_PATTERN);
+        return simpleDateFormat.format(new Date(timestamp));
+    }
+
+        public static Date getYmdhmsPatternBySecond(Long timestamp) {
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DEFAULT_PATTERN);
+            String dateString = simpleDateFormat.format(timestamp * 1000);
+            return simpleDateFormat.parse(dateString);
+        } catch (ParseException e) {
+            log.error("getYmdhmsPattern error,{}", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+        /**
+         * 获取某天开始时间, 即00:00:00
+         */
+        public static Date getDayStart(Date date) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+        /**
+         * 获取指定结束时间, 即23:59:59
+         */
+        public static Date getDayEnd(Date date) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 59);
+        return cal.getTime();
+    }
+
+
+        /**
+         * 获得n天后
+         */
+        public static Date getDayAfter(Date date, Integer pastDay) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, pastDay);
+        return calendar.getTime();
+    }
+
 
 
     static boolean hasNoFractionalPart(Double doubleValue) {
